@@ -1,0 +1,106 @@
+package ThoiGian;
+
+import java.time.LocalDate;
+import java.time.Period;
+import java.time.format.DateTimeFormatter;
+import java.util.Scanner;
+
+public class BT1 {
+
+    public static void main(String[] args) {
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        Scanner sc = new Scanner(System.in);
+
+        System.out.print("Nhap ho ten: ");
+        String HoTen = sc.nextLine();
+
+        System.out.print("Nhap ngay sinh(dd/mm/yyyy): ");
+        String ns = sc.nextLine();
+
+        System.out.print("Nhap gioi tinh(Nam/Nu): ");
+        String GT = sc.nextLine();
+
+        System.out.print("Nhap ngay di lam(dd/mm/yyyy): ");
+        String DiLam = sc.nextLine();
+
+        LocalDate ngaysinh = LocalDate.parse(ns, dtf);
+        LocalDate now = LocalDate.now();
+        Period pr = Period.between(ngaysinh, now);
+
+        System.out.println("Ho ten: " + HoTen);
+
+        String tuoi = pr.getYears() + " nam " + pr.getMonths() + " thang " + pr.getDays() + " ngay";
+        System.out.println("Tuoi cua ban la: " + tuoi);
+
+        System.out.println("Gioi tinh: " + GT);
+
+        LocalDate NgayBatdauLam = LocalDate.parse(DiLam, dtf);
+        LocalDate TuoiNghiHuu = (GT.equalsIgnoreCase("Nam")) ? NgayBatdauLam.plusYears(60) : NgayBatdauLam.plusYears(55);
+        System.err.println("Tuoi nghi huu la: " + TuoiNghiHuu.format(dtf));
+
+        double HeSoLuong = TinhHeSoLuong(NgayBatdauLam);
+        System.err.println("He so luong hien tai: " + HeSoLuong);
+        
+        double HeSoLuongNghiHuu = TinhHeSoLuongNghiHuu(NgayBatdauLam, GT);
+        System.out.println("He so luong luc nghi huu: " + HeSoLuongNghiHuu);
+
+
+        double TienLuong = TinhTienLuong(NgayBatdauLam, HeSoLuong);
+        System.err.println("Tien luong: " + TienLuong);
+
+        double LuongHuu = TinhLuongHuu(NgayBatdauLam, HeSoLuong);
+        System.err.println("Tien luong huu: " + LuongHuu);
+    }
+
+    private static double TinhHeSoLuong(LocalDate NgayBatDauLam) {
+        Period ThoiGianLamViec = Period.between(NgayBatDauLam, LocalDate.now());
+        int SoNamLamViec = ThoiGianLamViec.getYears();
+        double HeSoLuong = 2.34 + Math.floorDiv(SoNamLamViec, 3) * 0.33;
+        return HeSoLuong;
+    }
+    
+    private static double TinhHeSoLuongNghiHuu(LocalDate NgayBatDauLam, String GT) {
+        int tuoiNghiHuu = (GT.equalsIgnoreCase("Nam")) ? 60 : 55;
+        Period ThoiGianLamViec = Period.between(NgayBatDauLam, LocalDate.now());
+        int SoNamLamViec = ThoiGianLamViec.getYears();
+    
+        double HeSoLuongNghiHuu = 2.34;
+    
+        int SoLanTangHSL = tuoiNghiHuu / 3;
+        HeSoLuongNghiHuu += SoLanTangHSL * 0.33;
+    
+        HeSoLuongNghiHuu = Math.round(HeSoLuongNghiHuu * 100.0) / 100.0;
+    
+        return HeSoLuongNghiHuu;
+}
+
+
+
+    private static double TinhTienLuong(LocalDate NgayBatDauLam, double HeSoLuong) {
+        double LuongCoBan = 1800000;
+        Period ThoiGianLamViec = Period.between(NgayBatDauLam, LocalDate.now());
+        int SoNamLamViec = ThoiGianLamViec.getYears();
+
+        double PhuCap = 0;
+        if (SoNamLamViec >= 5) { // Corrected condition
+            PhuCap = 0.05 * LuongCoBan;
+            PhuCap += (SoNamLamViec - 5) * 0.01 * LuongCoBan;
+        }
+
+        double Luong = PhuCap + LuongCoBan * HeSoLuong;
+        return Luong;
+    }
+
+    private static double TinhLuongHuu(LocalDate NgayBatDauLam, double HeSoLuong) {
+        double TongLuong36Thang = 0;
+        for (int i = 0; i < 36; i++) {
+            LocalDate NgayCuoiThang = NgayBatDauLam.minusMonths(i);
+            double LuongCuoiThang = TinhTienLuong(NgayCuoiThang, HeSoLuong);
+            TongLuong36Thang += LuongCuoiThang;
+        }
+
+        double TrungBinhLuong36Thang = TongLuong36Thang / 36;
+        double LuongHuu = 0.7 * TrungBinhLuong36Thang;
+        return LuongHuu;
+    }
+}
